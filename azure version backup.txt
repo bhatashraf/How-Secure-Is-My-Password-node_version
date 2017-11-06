@@ -770,7 +770,6 @@ module.exports = function (context, req) {
         }],
 
         19: [function (e, a, r) {
-
             "use strict";
             var o = e("hsimp-main/bootstrap")(e("hsimp-main")),
               n = e("hsimp-library"),
@@ -778,26 +777,26 @@ module.exports = function (context, req) {
                   i = n.noOp;
                   var e = o(a);
 
-                  // tagPasswordStrength(e.getSecurityLevel())
-
+                  var timeToCrackPassword = e.getString();
+           var repeat_length_characterVariety = e.getChecks().length > 0 ? e.getChecks()[0].name : "No messages";
                   var timeInSeconds = e.getTimeInSeconds();
 
                   if (timeInSeconds <= 120) {
-                      tagPasswordStrength("NOT ACCEPTABLE");
+                      tagPasswordStrength("NOT ACCEPTABLE", timeToCrackPassword, repeat_length_characterVariety);
 
                   }
                   else if (timeInSeconds > 120 && timeInSeconds < 1.555e+7) {
-                      tagPasswordStrength("WEAK");
+                      tagPasswordStrength("WEAK", timeToCrackPassword, repeat_length_characterVariety);
 
 
                   }
                   else if (timeInSeconds >= 1.564e+7 && timeInSeconds < 1.577e+9) {
-                      tagPasswordStrength("MEDIUM");
+                      tagPasswordStrength("MEDIUM", timeToCrackPassword, repeat_length_characterVariety);
 
                   }
                   else {
 
-                      tagPasswordStrength("STRONG");
+                      tagPasswordStrength("STRONG", timeToCrackPassword, repeat_length_characterVariety);
                   }
 
               });
@@ -866,16 +865,18 @@ module.exports = function (context, req) {
     }
 
 
-    function tagPasswordStrength(securityLevel) {
 
-        passwordStrengthCampaignsTAG = securityLevel;
 
+    var jsonPasswordStrengthResult = { "PasswordStrengthTAG": "", "TimeToCrackPassword": "", "RepeatLengthCharacterVariety": {} }
+
+
+    function tagPasswordStrength(securityLevel, timeToCrackPassword, repeat_length_characterVariety) {
+
+        jsonPasswordStrengthResult.PasswordStrengthTAG = securityLevel,
+        jsonPasswordStrengthResult.TimeToCrackPassword = timeToCrackPassword,
+        jsonPasswordStrengthResult.RepeatLengthCharacterVariety = repeat_length_characterVariety
 
     }
-
-
-    var  passwordStrengthCampaignsTAG = "";
-
 
     context.log('JavaScript HTTP trigger function processed a request.');
     function TestThis() {
@@ -884,7 +885,7 @@ module.exports = function (context, req) {
 
     passwordSecurityCheckerEntryPoint(passwordSecurityChecker);
 
-     attachTo = hsimp({
+    attachTo = hsimp({
         options: {
             calculationsPerSecond: 10e9, // 10 billion calculations per second
             good: 31557600e9, // 1 billion years
@@ -901,20 +902,24 @@ module.exports = function (context, req) {
     // Run the HSIMP
     attachTo(req.query.password);
 
-    //console.log(passwordStrengthCampaignsTAG);
 
     if (req.query.password || (req.body && req.body.password)) {
         context.res = {
-            // status: 200, /* Defaults to 200 */
-            body: (req.query.password || req.body.password) + ": "+ passwordStrengthCampaignsTAG
+            body: "Input password: " + (req.query.password || req.body.password) + " :::---> " + " Password Strength Tag: " + jsonPasswordStrengthResult.PasswordStrengthTAG + ", Time: " + jsonPasswordStrengthResult.TimeToCrackPassword + ", Warning: " + jsonPasswordStrengthResult.RepeatLengthCharacterVariety,
+            headers: {
+                'Content-Type': 'application/json'
+            }
         };
     }
     else {
         context.res = {
             status: 400,
-            body: "Please pass a name on the query string or in the request body"
+            body: "Please pass a name on the query string or in the request body",
+            headers: {
+                'Content-Type': 'application/json'
+            }
         };
     }
     context.done();
-    
+
 };

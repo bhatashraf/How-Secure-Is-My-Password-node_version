@@ -777,27 +777,29 @@ var functionList = {
 			  
              // tagPasswordStrength(e.getSecurityLevel())
 
+              var timeToCrackPassword = e.getString();
+              var repeat_length_characterVariety = e.getChecks().length > 0 ? e.getChecks()[0].name : "No messages";
               var timeInSeconds = e.getTimeInSeconds();
 
               if ( timeInSeconds <= 120)
               {
-                  tagPasswordStrength("NOT ACCEPTABLE");
+                  tagPasswordStrength("NOT ACCEPTABLE", timeToCrackPassword, repeat_length_characterVariety);
              
               }
               else if ( timeInSeconds > 120 && timeInSeconds < 1.555e+7)
               {
-                  tagPasswordStrength("WEAK");
+                  tagPasswordStrength("WEAK", timeToCrackPassword, repeat_length_characterVariety);
                 
                   
               }              
               else if (timeInSeconds >= 1.564e+7 && timeInSeconds < 1.577e+9)
               {
-                  tagPasswordStrength("MEDIUM");
+                  tagPasswordStrength("MEDIUM", timeToCrackPassword, repeat_length_characterVariety);
                  
               }
               else {
                   
-                  tagPasswordStrength("STRONG");
+                  tagPasswordStrength("STRONG", timeToCrackPassword, repeat_length_characterVariety);
               }
 
           });
@@ -865,16 +867,16 @@ function passwordSecurityCheckerEntryPoint(e) {
 
 }
 
-
-function tagPasswordStrength(securityLevel) {
-	
-     passwordStrengthCampaignsTAG = securityLevel;
-	 
-
-   }
+var jsonPasswordStrengthResult = { "PasswordStrengthTAG": "", "TimeToCrackPassword": "", "RepeatLengthCharacterVariety": {} }
 
 
-var passwordStrengthCampaignsTAG = "";
+ function tagPasswordStrength(securityLevel, timeToCrackPassword, repeat_length_characterVariety) {
+        
+     jsonPasswordStrengthResult.PasswordStrengthTAG = securityLevel,
+     jsonPasswordStrengthResult.TimeToCrackPassword = timeToCrackPassword,
+     jsonPasswordStrengthResult.RepeatLengthCharacterVariety = repeat_length_characterVariety
+
+ }
 
 module.exports = {
 	
@@ -900,6 +902,9 @@ module.exports = {
         // Run the HSIMP
         attachTo(userPassword);	
 		
-		console.log(passwordStrengthCampaignsTAG);
+	 console.log("json object result");
+     console.log("passwordStrengthTAG: " + jsonPasswordStrengthResult.PasswordStrengthTAG);
+     console.log("TimeToCrackPassword: " + jsonPasswordStrengthResult.TimeToCrackPassword);
+     console.log("RepeatLengthCharacterVariety: " + jsonPasswordStrengthResult.RepeatLengthCharacterVariety);
 	}
 };
